@@ -4,7 +4,7 @@
   become: true
   vars: 
     squid_port: 3128
-    localnet: "192.168.29.0/24"
+    localnet: "192.168.29.116"
     pkg: [squid, haproxy]
   tasks:
     - name: Install Squid and HAProxy
@@ -17,6 +17,8 @@
       ansible.builtin.template:
         src: "templates/squid.conf.j2"
         dest: "/etc/squid/conf.d/custom.conf"
+      register: squid_conf
+#        validate: squid -k parse %s
 
 #    - name: Check for Data
 #      shell: grep -c "b_squid" /etc/haproxy/haproxy.cfg || true
@@ -33,7 +35,7 @@
     - name: Services Enabling
       service:
         name: "{{ item }}"
-        state: restarted
+        state: reloaded
         enabled: yes
       loop: "{{ pkg }}"
 

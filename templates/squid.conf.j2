@@ -1,4 +1,4 @@
-acl localnet src {{ localnet }} #IP at which squid should listen on
+acl localnet src {{ localnet }} #IPs from which squid should listen
 acl SSL_ports port 443
 acl CONNECT method CONNECT
 acl Safe_ports port 21 #ftp
@@ -17,3 +17,4 @@ refresh_pattern ^ftp:  1440 20% 10080
 refresh_pattern ^gopher: 1440 0% 1440
 refresh_pattern -i (/cgi-bin/|\?) 0 0% 0
 refresh_pattern .  0 20% 4320
+logfile_rotate 30
