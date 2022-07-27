@@ -29,9 +29,14 @@
     - name: Authentication 
       htpasswd:
         path: /etc/squid/auth_conf
-        name: squid_proxy
+        name: "{{ auth_username }}"
         password: "{{ auth_password }}"
       when: authenticate
+
+    - name: Copy domain_list.acl file
+      copy:
+        src: "templates/domain_list.acl"
+        dest: "/etc/squid/domain_list.aclt"
 
     - name: Squid Proxy configurations
       ansible.builtin.template:
@@ -47,6 +52,13 @@
         state: present    
       when: authenticate
       register: auth_ena
+
+    - name: Enable authenticated ACl
+      replace:
+        path: "/etc/squid/squid.conf"
+        regexp: 'permitted domain_list'
+        replace: 'permitted authenticated domain_list'
+      when: authenticate
 
     - name: Services Enabling
       service:

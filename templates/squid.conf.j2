@@ -1,7 +1,7 @@
 #
 # Recommended minimum configuration:
 #
-
+debug_options ALL,1 33,2
 # Example rule allowing access from your local networks.
 # Adapt to list your (internal) IP networks from where browsing
 # should be allowed
@@ -16,6 +16,9 @@ forwarded_for delete
 
 # Remove more headers to avoid exposing the source.
 via off
+
+# Configuring a Domain Blacklist in Squid
+acl domain_list dstdomain "/etc/squid/domain_list.txt"
 
 acl permitted src {{ permitted }}
 
@@ -34,13 +37,13 @@ acl SSL_ports port 443
 acl Safe_ports port 80		# http
 acl Safe_ports port 21		# ftp
 acl Safe_ports port 443		# https
-acl Safe_ports port 70		# gopher
-acl Safe_ports port 210		# wais
-acl Safe_ports port 1025-65535	# unregistered ports
-acl Safe_ports port 280		# http-mgmt
-acl Safe_ports port 488		# gss-http
-acl Safe_ports port 591		# filemaker
-acl Safe_ports port 777		# multiling http
+#acl Safe_ports port 70		# gopher
+#acl Safe_ports port 210		# wais
+#acl Safe_ports port 1025-65535	# unregistered ports
+#acl Safe_ports port 280		# http-mgmt
+#acl Safe_ports port 488		# gss-http
+#acl Safe_ports port 591		# filemaker
+#acl Safe_ports port 777		# multiling http
 acl CONNECT method CONNECT
 
 #
@@ -69,6 +72,7 @@ http_access deny manager
 # Adapt localnet in the ACL section to list your (internal) IP networks
 # from where browsing should be allowed
 #http_access allow localnet
+http_access deny permitted domain_list
 http_access allow permitted
 http_access allow localhost
 
