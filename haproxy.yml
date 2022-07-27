@@ -1,0 +1,34 @@
+---
+- name: Setup HAProxy
+  hosts: haproxy
+  become: true
+  vars: 
+    haproxy_services: [http, https]
+  tasks:
+
+    - name: Install HAProxy
+      package:
+        name: haproxy
+        state: present
+
+    - name: HAProxy Proxy configurations
+      blockinfile:
+        path: "/etc/haproxy/haproxy.cfg"
+        insertafter: EOF
+        block: "{{ lookup('ansible.builtin.file', 'templates/haproxy.cfg') }}"
+        state: present
+      register: haproxy_config
+
+    - name: Services Enabling
+      service:
+        name: haproxy
+        state: reload
+        enabled: yes
+      when: haproxy_config.changed
+
+    - name: Firewall Approval For HTTP and HTTPS
+      firewalld:
+       service: "{{ haproxy_services }}"
+       state: enabled
+       immediate: yes
+       permanent: yes 

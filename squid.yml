@@ -1,0 +1,66 @@
+---
+- name: Setup Proxy
+  hosts: squid
+  become: true
+  vars_files:
+    - squid_vars.yml 
+  tasks:
+
+    - name: enable epel Repo
+      yum:
+        name: epel-release
+        state: present
+      register: epel_repo
+    
+    - name: update yum cache
+      yum:
+        update_cache: true
+      when: epel_repo.changed
+
+    - name: Install Squid and its Deps
+      yum: 
+        name: "{{ pkg }}"
+        state: present
+
+    - name: Installing htpasswd dependency
+      pip:
+        name: passlib
+
+    - name: Authentication 
+      htpasswd:
+        path: /etc/squid/auth_conf
+        name: squid_proxy
+        password: "{{ auth_password }}"
+      when: authenticate
+
+    - name: Squid Proxy configurations
+      ansible.builtin.template:
+        src: "templates/squid.conf.j2"
+        dest: "/etc/squid/squid.conf"
+      register: squid_conf
+
+    - name: Updating the Auth Config
+      blockinfile:
+        path: "/etc/squid/squid.conf"
+        insertafter: "# Auth"
+        block: "{{ lookup('ansible.builtin.file', 'templates/squid_auth_config') }}"
+        state: present    
+      when: authenticate
+      register: auth_ena
+
+    - name: Services Enabling
+      service:
+        name: squid
+        state: restarted
+        enabled: yes
+      when: squid_conf.changed or auth_ena is succeeded
+
+    - name: Firewall Approval
+      firewalld:
+       port: "{{ squid_port }}/tcp"
+       state: enabled
+       immediate: yes
+       permanent: yes 
+
+
+

@@ -1,0 +1,5 @@
+pkg: [squid, httpd-tools, python-pip]
+squid_port: 3128
+permitted: "192.168.81.136/32"
+authenticate: true
+auth_password: "oedu2eGh"
