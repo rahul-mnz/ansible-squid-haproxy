@@ -3,7 +3,7 @@
   hosts: squid
   become: true
   vars_files:
-    - squid_vars.yml 
+    - variables/squid_vars.yml 
   tasks:
 
     - name: enable epel Repo
